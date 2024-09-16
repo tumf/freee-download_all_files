@@ -1,14 +1,13 @@
 import os
 from datetime import datetime, timedelta
-
+from dotenv import load_dotenv
 import requests
-from dateutil.relativedelta import (
-    relativedelta,  # Add relativedelta for monthly increments
-)
-
+from dateutil.relativedelta import relativedelta
 from freee_oauth_cli import get_access_token
 
-# アクセストークンを取得
+load_dotenv()
+
+
 ACCESS_TOKEN = get_access_token()
 
 # .envからCOMPANY_IDを取得
@@ -21,8 +20,13 @@ headers = {"Authorization": f"Bearer {ACCESS_TOKEN}", "Accept": "application/jso
 save_dir = "downloaded_receipts"
 os.makedirs(save_dir, exist_ok=True)
 
-# Set initial start date
-start_date = datetime(2023, 12, 1)
+# .envからSTART_DATEを取得
+start_date_str = os.getenv("START_DATE")
+if start_date_str:
+    start_date = datetime.strptime(start_date_str, "%Y-%m-%d")
+
+    start_date = datetime(2024, 1, 1)
+
 current_date = datetime.now()
 
 while start_date < current_date:
@@ -51,7 +55,7 @@ while start_date < current_date:
         start_date += relativedelta(months=1)
         continue
 
-    # 各領収をダウンロード
+    # 各領収書をダウンロード
     for receipt in receipts:
         print(receipt)
         receipt_id = receipt["id"]
@@ -85,17 +89,14 @@ while start_date < current_date:
             print(f"既にダウンロード済み: {file_name} (スキップ)")
             continue
 
-        # ファイルのダウンロードURLを取得
         download_url = f"https://api.freee.co.jp/api/1/receipts/{receipt_id}/download?company_id={COMPANY_ID}"
         file_response = requests.get(download_url, headers=headers)
 
         if file_response.status_code == 200:
-            # ファイルの保存
             with open(file_path, "wb") as f:
                 f.write(file_response.content)
             print(f"ダウンロード完了: {file_name}")
         else:
-            # 変更点: エラーの詳細を表示
             print(
                 f"ダウンロード失敗: {file_name} "
                 f"(ステータスコード: {file_response.status_code}, エラー: {file_response.text})"
