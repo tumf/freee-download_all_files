@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "freee-download-all-files"
+version = "0.1.0"
+description = ""
+authors = ["tumf <y.takahara@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests-oauthlib = "^2.0.0"
+python-dotenv = "^1.0.1"
+python-dateutil = "^2.9.0.post0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
